@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
+import { useOrganization } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { usePathname, useRouter } from "next/navigation";
+
 import {
   Form,
   FormControl,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+
 import { ThreadValidation } from "@/lib/validations/thread";
 import { createThread } from "@/lib/actions/thread.action";
 
@@ -22,11 +24,13 @@ interface Props {
   userId: string;
 }
 
-const PostThread = ({ userId }: Props) => {
+function PostThread({ userId }: Props) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const form = useForm({
+  const { organization } = useOrganization();
+
+  const form = useForm<z.infer<typeof ThreadValidation>>({
     resolver: zodResolver(ThreadValidation),
     defaultValues: {
       thread: "",
@@ -38,8 +42,7 @@ const PostThread = ({ userId }: Props) => {
     await createThread({
       text: values.thread,
       author: userId,
-      //         communityId: organization ? organization.id : null,
-      communityId: null,
+      communityId: organization ? organization.id : null,
       path: pathname,
     });
 
@@ -72,6 +75,6 @@ const PostThread = ({ userId }: Props) => {
       </form>
     </Form>
   );
-};
+}
 
 export default PostThread;
